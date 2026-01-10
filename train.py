@@ -36,6 +36,11 @@ def train():
             scores.append(game_score)
             mean_score = sum(scores) / len(scores)
             plot_mean_scores.append(mean_score)
+            target_score=5
+            if mean_score>=target_score:
+                agent.save(file_name='final_model.pth')
+                print(f"Target reached! Final mean score:{mean_score}")
+                break
 
             # Decay Epsilon (Curiosity) only after a game ends
             if agent.epsilon > agent.epsilon_min:
