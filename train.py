@@ -5,7 +5,7 @@ from helper import plot
 
 def train():
     env = SnakeEnv()
-    agent = Agent(state_size=11, action_size=3)
+    agent = Agent(state_size=14, action_size=3)
 
     scores = []
     plot_mean_scores = []
@@ -36,7 +36,7 @@ def train():
             scores.append(game_score)
             mean_score = sum(scores) / len(scores)
             plot_mean_scores.append(mean_score)
-            target_score=5
+            target_score=1
             if mean_score>=target_score:
                 agent.save(file_name='final_model.pth')
                 print(f"Target reached! Final mean score:{mean_score}")

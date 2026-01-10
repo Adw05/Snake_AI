@@ -27,7 +27,7 @@ class Agent:
         self.state_size = state_size
         self.action_size = action_size
         self.memory = deque(maxlen=100000)  # Increased memory size slightly
-        self.gamma = 0.9  # Discount rate
+        self.gamma = 0.99  # Discount rate
         self.epsilon = 1.0  # Exploration rate (managed by main.py)
         self.epsilon_min = 0.01
         self.epsilon_decay = 0.995
@@ -95,3 +95,12 @@ class Agent:
 
         file_name = os.path.join(model_folder_path, file_name)
         torch.save(self.model.state_dict(), file_name)
+    def load(self, file_name='model.pth'):
+        model_folder_path = './model'
+        file_path = os.path.join(model_folder_path, file_name)
+        if os.path.exists(file_path):
+            self.model.load_state_dict(torch.load(file_path))
+            self.model.eval()
+            print(f"Model loaded successfully from {file_path}")
+        else:
+            print(f"Error: No model found at {file_path}")

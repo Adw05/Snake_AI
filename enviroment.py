@@ -68,7 +68,7 @@ class SnakeEnv:
             reward = 10
 
         # 3. Optional: Time penalty to prevent looping
-        # reward -= 0.01
+        reward -= 0.01
 
         self.screen.update()
 
@@ -91,7 +91,7 @@ class SnakeEnv:
     def get_state(self):
         head = self.snake.head
 
-        # Create test points for "Danger" checks
+        # Points to check around the head
         point_l = (head.xcor() - 20, head.ycor())
         point_r = (head.xcor() + 20, head.ycor())
         point_u = (head.xcor(), head.ycor() + 20)
@@ -102,9 +102,8 @@ class SnakeEnv:
         dir_u = head.heading() == 90
         dir_d = head.heading() == 270
 
-        # Helper to check collision for a coordinate tuple
-        def check(pt):
-            # Create a dummy object with xcor/ycor methods for compatibility
+        # Helper: Checks for ANY collision (Wall OR Tail)
+        def check_collision(pt):
             class Pt:
                 def xcor(self): return pt[0]
 
@@ -115,34 +114,57 @@ class SnakeEnv:
 
             return self.is_collision(Pt())
 
+        # Helper: Checks ONLY for Wall collision
+        def check_wall(pt):
+            return pt[0] > 280 or pt[0] < -280 or pt[1] > 280 or pt[1] < -280
+
         state = [
-            # Danger Straight
-            (dir_r and check(point_r)) or
-            (dir_l and check(point_l)) or
-            (dir_u and check(point_u)) or
-            (dir_d and check(point_d)),
+            # 1. Danger Straight (Any Danger)
+            (dir_r and check_collision(point_r)) or
+            (dir_l and check_collision(point_l)) or
+            (dir_u and check_collision(point_u)) or
+            (dir_d and check_collision(point_d)),
 
-            # Danger Right
-            (dir_u and check(point_r)) or
-            (dir_d and check(point_l)) or
-            (dir_l and check(point_u)) or
-            (dir_r and check(point_d)),
+            # 2. Danger Right (Any Danger)
+            (dir_u and check_collision(point_r)) or
+            (dir_d and check_collision(point_l)) or
+            (dir_l and check_collision(point_u)) or
+            (dir_r and check_collision(point_d)),
 
-            # Danger Left
-            (dir_d and check(point_r)) or
-            (dir_u and check(point_l)) or
-            (dir_r and check(point_u)) or
-            (dir_l and check(point_d)),
+            # 3. Danger Left (Any Danger)
+            (dir_d and check_collision(point_r)) or
+            (dir_u and check_collision(point_l)) or
+            (dir_r and check_collision(point_u)) or
+            (dir_l and check_collision(point_d)),
 
-            # Move Direction
+            # --- NEW: SPECIFIC WALL CHECKS ---
+            # 4. Wall Straight
+            (dir_r and check_wall(point_r)) or
+            (dir_l and check_wall(point_l)) or
+            (dir_u and check_wall(point_u)) or
+            (dir_d and check_wall(point_d)),
+
+            # 5. Wall Right
+            (dir_u and check_wall(point_r)) or
+            (dir_d and check_wall(point_l)) or
+            (dir_l and check_wall(point_u)) or
+            (dir_r and check_wall(point_d)),
+
+            # 6. Wall Left
+            (dir_d and check_wall(point_r)) or
+            (dir_u and check_wall(point_l)) or
+            (dir_r and check_wall(point_u)) or
+            (dir_l and check_wall(point_d)),
+            # ---------------------------------
+
+            # 7-10. Move Direction
             dir_l, dir_r, dir_u, dir_d,
 
-            # Food Location
+            # 11-14. Food Location
             self.food.xcor() < head.xcor(),  # Food Left
             self.food.xcor() > head.xcor(),  # Food Right
             self.food.ycor() > head.ycor(),  # Food Up
             self.food.ycor() < head.ycor()  # Food Down
         ]
 
-        # Convert True/False to 1/0
         return np.array(state, dtype=int)
