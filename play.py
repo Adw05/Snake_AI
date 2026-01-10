@@ -5,34 +5,44 @@ from enviroment import SnakeEnv
 
 def play():
     env = SnakeEnv()
+
     agent = Agent(state_size=14, action_size=3)
 
-    # Load your saved model (change name if you saved it differently)
+    # Load the model
     agent.load('./final_model.pth')
 
-    # 1. Turn off Randomness (Exploration)
+    # Disable randomness
     agent.epsilon = 0
 
-    game_count = 0
+    print("Game Started!")
 
     while True:
-        # Get current state
-
         state = env.get_state()
-
-        # 2. Get Predicted Action (No random moves)
         action = agent.choose_action(state)
-
-        # 3. Perform Move
         _, _, done, _ = env.step(action)
 
-        # 4. Slow down the game so you can watch it!
-        time.sleep(0.1)  # Adjust this to change game speed
+        time.sleep(0.1)
 
         if done:
-            game_count += 1
-            print(f"Game {game_count} Score: {env.scoreboard.score}")
-            env.reset()
+            head = env.snake.head
+            score = env.scoreboard.score
+
+            # --- DIAGNOSE DEATH ---
+            # [cite_start]We check the exact same boundaries as enviroment.py [cite: 28]
+            if (head.xcor() > 280 or head.xcor() < -280 or
+                    head.ycor() > 280 or head.ycor() < -280):
+                print(f"Game Over: Wall hit")
+            else:
+                print(f"Game Over: Tail bitten")
+
+            print(f"Final Score: {score}")
+
+
+            break
+
+
+    print("Click the game window to close it...")
+    env.screen.exitonclick()
 
 
 if __name__ == '__main__':

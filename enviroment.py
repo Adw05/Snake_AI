@@ -84,7 +84,7 @@ class SnakeEnv:
             return True
 
         # Tail (skip head)
-        for segment in self.snake.segments[1:]:
+        for segment in self.snake.segments[3:]:
             if point.distance(segment) < 20:
                 return True
         return False
