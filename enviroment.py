@@ -65,6 +65,7 @@ class SnakeEnv:
             self.food.refresh()
             self.snake.extend()
             self.scoreboard.score += 1  # Update internal score
+            self.scoreboard.update_scoreboard()
             reward = 10
 
         # 3. Optional: Time penalty to prevent looping

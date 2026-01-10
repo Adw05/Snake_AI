@@ -8,7 +8,7 @@ def play():
     agent = Agent(state_size=14, action_size=3)
 
     # Load your saved model (change name if you saved it differently)
-    agent.load('model.pth')
+    agent.load('./final_model.pth')
 
     # 1. Turn off Randomness (Exploration)
     agent.epsilon = 0
@@ -17,6 +17,7 @@ def play():
 
     while True:
         # Get current state
+
         state = env.get_state()
 
         # 2. Get Predicted Action (No random moves)
@@ -26,7 +27,7 @@ def play():
         _, _, done, _ = env.step(action)
 
         # 4. Slow down the game so you can watch it!
-        time.sleep(0.05)  # Adjust this to change game speed
+        time.sleep(0.1)  # Adjust this to change game speed
 
         if done:
             game_count += 1
