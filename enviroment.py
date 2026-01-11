@@ -49,7 +49,7 @@ class SnakeEnv:
         # if action == 0, we do nothing (keep going straight)
 
         self.snake.move()
-        self.food.move_food()
+        self.food.move_food() #Not learned during training
 
         # --- Rewards & Game Over Logic ---
         reward = 0
