@@ -68,6 +68,10 @@ class SnakeEnv:
             self.scoreboard.score += 1  # Update internal score
             self.scoreboard.update_scoreboard()
             reward = 10
+        if (self.food.xcor() > 280 or self.food.xcor() < -280 or
+                self.food.ycor() > 280 or self.food.ycor() < -280):
+            self.food.refresh()
+
 
         # 3. Optional: Time penalty to prevent looping
         reward -= 0.01
