@@ -1,8 +1,8 @@
 import pygame
 import numpy as np
-from snake import Snake
-from food import Food
-from scoreboard import Scoreboard
+from components.snake import Snake
+from components.food import Food
+from components.scoreboard import Scoreboard
 
 
 class SnakeEnv:
