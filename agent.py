@@ -39,6 +39,13 @@ class Agent:
 
         # Initialize Model and move to GPU
         self.model = DQN(state_size, 256, action_size).to(self.device)
+
+        # NEW: Target Network
+        self.target_model = DQN(state_size, 256, action_size).to(self.device)
+        self.target_model.load_state_dict(self.model.state_dict())  # Copy weights
+        self.target_update_freq = 100  # Update every 100 steps
+        self.step_count = 0
+
         self.optimizer = optim.Adam(self.model.parameters(), lr=self.lr)
 
     def choose_action(self, state):
@@ -76,10 +83,13 @@ class Agent:
         # 1. Predicted Q values (Current State)
         q_values = self.model(states).gather(1, actions)
 
-        # 2. Target Q values (Next State)
+        # 2. Target Q values (Next State) - MODIFIED: Use target_model
         with torch.no_grad():
-            q_next = self.model(next_states).max(1)[0].unsqueeze(1)
+            q_next = self.target_model(next_states).max(1)[0].unsqueeze(1)
             target = rewards + (self.gamma * q_next * (1 - dones))
+            #next_actions = self.model(next_states).argmax(1).unsqueeze(1)
+            #q_next = self.target_model(next_states).gather(1, next_actions)
+            #target = rewards + (self.gamma * q_next * (1 - dones))
 
         # 3. Calculate Loss and Optimize
         loss = F.mse_loss(q_values, target)
@@ -88,6 +98,11 @@ class Agent:
         loss.backward()
         self.optimizer.step()
 
+        # NEW: Update target network periodically
+        self.step_count += 1
+        if self.step_count % self.target_update_freq == 0:
+            self.target_model.load_state_dict(self.model.state_dict())
+
     def save(self, file_name='model.pth'):
         model_folder_path = './model'
         if not os.path.exists(model_folder_path):
@@ -95,6 +110,7 @@ class Agent:
 
         file_name = os.path.join(model_folder_path, file_name)
         torch.save(self.model.state_dict(), file_name)
+
     def load(self, file_name='model.pth'):
         model_folder_path = './model'
         file_path = os.path.join(model_folder_path, file_name)

@@ -6,10 +6,11 @@ from environment import SnakeEnv
 
 def play():
     env = SnakeEnv()
+    env.render_mode = True  # Render for viewing
     agent = Agent(state_size=14, action_size=3)
 
     # Load the model
-    agent.load('./final_model.pth')
+    agent.load('smart_model.pth')
 
     # Disable randomness
     agent.epsilon = 0

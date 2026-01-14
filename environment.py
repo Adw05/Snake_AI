@@ -19,6 +19,9 @@ class SnakeEnv:
         self.scoreboard = Scoreboard()
         self.done = False
 
+        # NEW: Render flag (default True for play, False for fast train)
+        self.render_mode = True
+
     def reset(self):
         self.snake.reset()
         self.food = Food()
@@ -53,7 +56,7 @@ class SnakeEnv:
         # if action == 0, keep straight
 
         self.snake.move()
-        self.food.move_food()
+        #self.food.move_food()
 
         # Rewards & Game Over Logic
         reward = 0
@@ -74,22 +77,21 @@ class SnakeEnv:
             reward = 10
 
         # Check food out of bounds (Wandering logic from original)
-        if (self.food.xcor() > self.width - 20 or self.food.xcor() < 0 or
-                self.food.ycor() > self.height - 20 or self.food.ycor() < 0):
-            self.food.refresh()
+        #if (self.food.xcor() > self.width - 20 or self.food.xcor() < 0 or
+                #self.food.ycor() > self.height - 20 or self.food.ycor() < 0):
+            #self.food.refresh()
 
         # 3. Time penalty
         reward -= 0.01
 
-        # Render
-        self.screen.fill((0, 0, 0))  # Black background
-        self.snake.draw(self.screen)
-        self.food.draw(self.screen)
-        self.scoreboard.update_scoreboard(self.screen)
-        pygame.display.flip()
-
-        # Speed control ()
-        # self.clock.tick(60)
+        # NEW: Conditional Rendering
+        if self.render_mode:
+            self.screen.fill((0, 0, 0))  # Black background
+            self.snake.draw(self.screen)
+            self.food.draw(self.screen)
+            self.scoreboard.update_scoreboard(self.screen)
+            pygame.display.flip()
+            self.clock.tick(60)  # Uncommented for consistent speed
 
         return self.get_state(), reward, game_over, {}
 

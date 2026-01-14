@@ -5,6 +5,7 @@ from helper import plot
 
 def train():
     env = SnakeEnv()
+    env.render_mode = False  # Fast training without rendering
     agent = Agent(state_size=14, action_size=3)
 
     scores = []
@@ -36,9 +37,9 @@ def train():
             scores.append(game_score)
             mean_score = sum(scores) / len(scores)
             plot_mean_scores.append(mean_score)
-            target_score=1.1
+            target_score=10
             if mean_score>=target_score:
-                agent.save(file_name='final_model.pth')
+                agent.save(file_name='smart_model.pth')
                 print(f"Target reached! Final mean score:{mean_score}")
                 break
 
