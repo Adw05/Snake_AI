@@ -1,5 +1,5 @@
 from agent import Agent
-from enviroment import SnakeEnv
+from environment import SnakeEnv
 from helper import plot
 
 

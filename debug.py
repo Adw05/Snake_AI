@@ -1,4 +1,4 @@
-from enviroment import SnakeEnv
+from environment import SnakeEnv
 from scoreboard import Scoreboard
 
 

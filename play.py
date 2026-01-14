@@ -1,6 +1,6 @@
 import time
 from agent import Agent
-from enviroment import SnakeEnv
+from environment import SnakeEnv
 
 
 def play():
@@ -28,7 +28,7 @@ def play():
             score = env.scoreboard.score
 
             # --- DIAGNOSE DEATH ---
-            # [cite_start]We check the exact same boundaries as enviroment.py [cite: 28]
+            # [cite_start]We check the exact same boundaries as environment.py [cite: 28]
             if (head.xcor() > 280 or head.xcor() < -280 or
                     head.ycor() > 280 or head.ycor() < -280):
                 print(f"Game Over: Wall hit")
