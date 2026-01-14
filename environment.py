@@ -1,30 +1,26 @@
-from turtle import Screen
+import pygame
+import numpy as np
 from snake import Snake
 from food import Food
 from scoreboard import Scoreboard
-import numpy as np
-import time
 
 
 class SnakeEnv:
     def __init__(self):
-        self.screen = Screen()
-        self.screen.setup(width=600, height=600)
-        self.screen.bgcolor("black")
-        self.screen.title("Snake RL")
-        self.screen.tracer(0)  # Turn off animation for speed
+        pygame.init()
+        self.width = 600
+        self.height = 600
+        self.screen = pygame.display.set_mode((self.width, self.height))
+        pygame.display.set_caption("Snake RL (Pygame)")
+        self.clock = pygame.time.Clock()
 
-        self.snake = Snake()
+        self.snake = Snake(self.width // 2, self.height // 2)
         self.food = Food()
         self.scoreboard = Scoreboard()
         self.done = False
 
     def reset(self):
-        self.snake.reset()  # Assuming you added a reset method to snake.py, or recreate it:
-        self.screen.clear()
-        self.screen.bgcolor("black")
-        self.screen.tracer(0)
-        self.snake = Snake()
+        self.snake.reset()
         self.food = Food()
         self.scoreboard = Scoreboard()
         self.food.refresh()
@@ -32,118 +28,144 @@ class SnakeEnv:
         return self.get_state()
 
     def step(self, action):
-        # Action List: [Straight, Right Turn, Left Turn]
-        # index 0 = Straight, 1 = Right, 2 = Left
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                quit()
 
-        clock_wise = [0, 270, 180, 90]  # Right, Down, Left, Up
-        current_heading = self.snake.head.heading()
-        idx = clock_wise.index(current_heading)
+        # Action List: [Straight, Right Turn, Left Turn]
+        # Clockwise angles: Right(0), Down(270), Left(180), Up(90)
+        clock_wise = [0, 270, 180, 90]
+        current_heading = self.snake.get_heading()
+
+        try:
+            idx = clock_wise.index(current_heading)
+        except ValueError:
+            idx = 0
 
         # Calculate new direction based on relative action
         if action == 1:  # Right Turn
             new_dir = clock_wise[(idx + 1) % 4]
-            self.snake.head.setheading(new_dir)
+            self.snake.set_direction(new_dir)
         elif action == 2:  # Left Turn
             new_dir = clock_wise[(idx - 1) % 4]
-            self.snake.head.setheading(new_dir)
-        # if action == 0, we do nothing (keep going straight)
+            self.snake.set_direction(new_dir)
+        # if action == 0, keep straight
 
         self.snake.move()
-        self.food.move_food() #Not learned during training
+        self.food.move_food()
 
-        # --- Rewards & Game Over Logic ---
+        # Rewards & Game Over Logic
         reward = 0
         game_over = False
 
-        # 1. Collision (Wall or Self)
+        # 1. Collision
         if self.is_collision():
             game_over = True
             reward = -10
             return self.get_state(), reward, game_over, {}
 
         # 2. Food Logic
-        if self.snake.head.distance(self.food) < 15:
+        # Check collision with food rect
+        if self.snake.head.colliderect(self.food.rect):
             self.food.refresh()
             self.snake.extend()
-            self.scoreboard.score += 1  # Update internal score
-            self.scoreboard.update_scoreboard()
+            self.scoreboard.add_score()
             reward = 10
-        if (self.food.xcor() > 280 or self.food.xcor() < -280 or
-                self.food.ycor() > 280 or self.food.ycor() < -280):
+
+        # Check food out of bounds (Wandering logic from original)
+        if (self.food.xcor() > self.width - 20 or self.food.xcor() < 0 or
+                self.food.ycor() > self.height - 20 or self.food.ycor() < 0):
             self.food.refresh()
 
-
-        # 3. Optional: Time penalty to prevent looping
+        # 3. Time penalty
         reward -= 0.01
 
-        self.screen.update()
+        # Render
+        self.screen.fill((0, 0, 0))  # Black background
+        self.snake.draw(self.screen)
+        self.food.draw(self.screen)
+        self.scoreboard.update_scoreboard(self.screen)
+        pygame.display.flip()
+
+        # Speed control ()
+        # self.clock.tick(60)
 
         return self.get_state(), reward, game_over, {}
 
     def is_collision(self, point=None):
+        # Point is expected to be an object with .x, .y attributes or the head rect
         if point is None:
             point = self.snake.head
 
-        # Wall
-        if point.xcor() > 280 or point.xcor() < -280 or point.ycor() > 280 or point.ycor() < -280:
+        # Extract coordinates depending on input type
+        if hasattr(point, 'x'):
+            px, py = point.x, point.y
+        else:  # Tuple
+            px, py = point[0], point[1]
+
+        # Wall Collision
+        # Adjusted for 0-600 coordinates with 20px padding logic
+        if px > self.width - 20 or px < 0 or py > self.height - 20 or py < 0:
             return True
 
-        # Tail (skip head)
-        for segment in self.snake.segments[3:]:
-            if point.distance(segment) < 20:
-                return True
+        # Tail Collision
+        # Skip the head (first segment)
+        for segment in self.snake.segments[1:]:
+            if hasattr(point, 'colliderect'):
+                if point.colliderect(segment):
+                    return True
+            else:
+                # Manual distance/overlap check if point is tuple
+                if segment.collidepoint(px, py):
+                    return True
         return False
 
     def get_state(self):
         head = self.snake.head
 
-        # Points to check around the head
-        point_l = (head.xcor() - 20, head.ycor())
-        point_r = (head.xcor() + 20, head.ycor())
-        point_u = (head.xcor(), head.ycor() + 20)
-        point_d = (head.xcor(), head.ycor() - 20)
+        # Points to check around the head (20px offset)
+        # simulate checking "potential" future positions
+        point_l = (head.x - 20, head.y)
+        point_r = (head.x + 20, head.y)
+        point_u = (head.x, head.y - 20)  # Up is negative Y
+        point_d = (head.x, head.y + 20)  # Down is positive Y
 
-        dir_l = head.heading() == 180
-        dir_r = head.heading() == 0
-        dir_u = head.heading() == 90
-        dir_d = head.heading() == 270
+        # Current Heading
+        heading = self.snake.get_heading()
+        dir_l = heading == 180
+        dir_r = heading == 0
+        dir_u = heading == 90
+        dir_d = heading == 270
 
-        # Helper: Checks for ANY collision (Wall OR Tail)
+        # Helpers
         def check_collision(pt):
-            class Pt:
-                def xcor(self): return pt[0]
+            # pt is a tuple (x, y). Check if it hits wall or tail
+            return self.is_collision((pt[0], pt[1]))
 
-                def ycor(self): return pt[1]
-
-                def distance(self, o):
-                    return ((self.xcor() - o.xcor()) ** 2 + (self.ycor() - o.ycor()) ** 2) ** 0.5
-
-            return self.is_collision(Pt())
-
-        # Helper: Checks ONLY for Wall collision
         def check_wall(pt):
-            return pt[0] > 280 or pt[0] < -280 or pt[1] > 280 or pt[1] < -280
+            return pt[0] > self.width - 20 or pt[0] < 0 or pt[1] > self.height - 20 or pt[1] < 0
 
+        # State Vector construction (Logic identical to original)
         state = [
-            # 1. Danger Straight (Any Danger)
+            # 1. Danger Straight
             (dir_r and check_collision(point_r)) or
             (dir_l and check_collision(point_l)) or
             (dir_u and check_collision(point_u)) or
             (dir_d and check_collision(point_d)),
 
-            # 2. Danger Right (Any Danger)
+            # 2. Danger Right
             (dir_u and check_collision(point_r)) or
             (dir_d and check_collision(point_l)) or
             (dir_l and check_collision(point_u)) or
             (dir_r and check_collision(point_d)),
 
-            # 3. Danger Left (Any Danger)
+            # 3. Danger Left
             (dir_d and check_collision(point_r)) or
             (dir_u and check_collision(point_l)) or
             (dir_r and check_collision(point_u)) or
             (dir_l and check_collision(point_d)),
 
-            # --- NEW: SPECIFIC WALL CHECKS ---
             # 4. Wall Straight
             (dir_r and check_wall(point_r)) or
             (dir_l and check_wall(point_l)) or
@@ -161,16 +183,16 @@ class SnakeEnv:
             (dir_u and check_wall(point_l)) or
             (dir_r and check_wall(point_u)) or
             (dir_l and check_wall(point_d)),
-            # ---------------------------------
 
             # 7-10. Move Direction
             dir_l, dir_r, dir_u, dir_d,
 
             # 11-14. Food Location
-            self.food.xcor() < head.xcor(),  # Food Left
-            self.food.xcor() > head.xcor(),  # Food Right
-            self.food.ycor() > head.ycor(),  # Food Up
-            self.food.ycor() < head.ycor()  # Food Down
+            self.food.xcor() < head.x,  # Food Left
+            self.food.xcor() > head.x,  # Food Right
+            self.food.ycor() < head.y,
+            # Food Up
+            self.food.ycor() > head.y  # Food Down
         ]
 
         return np.array(state, dtype=int)

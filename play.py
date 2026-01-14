@@ -1,11 +1,11 @@
 import time
+import pygame
 from agent import Agent
 from environment import SnakeEnv
 
 
 def play():
     env = SnakeEnv()
-
     agent = Agent(state_size=14, action_size=3)
 
     # Load the model
@@ -16,33 +16,31 @@ def play():
 
     print("Game Started!")
 
-    while True:
+    running = True
+    while running:
         state = env.get_state()
         action = agent.choose_action(state)
         _, _, done, _ = env.step(action)
 
-        time.sleep(0.1)
+        time.sleep(0.05)  # Slower for viewing
 
         if done:
             head = env.snake.head
             score = env.scoreboard.score
 
-            # --- DIAGNOSE DEATH ---
-            # [cite_start]We check the exact same boundaries as environment.py [cite: 28]
-            if (head.xcor() > 280 or head.xcor() < -280 or
-                    head.ycor() > 280 or head.ycor() < -280):
+            if (head.x > 580 or head.x < 0 or
+                    head.y > 580 or head.y < 0):
                 print(f"Game Over: Wall hit")
             else:
                 print(f"Game Over: Tail bitten")
 
             print(f"Final Score: {score}")
-
-
+            env.scoreboard.draw_game_over(env.screen)
+            pygame.display.flip()
+            time.sleep(2)
             break
 
-
-    print("Click the game window to close it...")
-    env.screen.exitonclick()
+    pygame.quit()
 
 
 if __name__ == '__main__':

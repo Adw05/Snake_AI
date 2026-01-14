@@ -1,23 +1,25 @@
-from turtle import Turtle
-FONT="Arial"
-class Scoreboard(Turtle):
+import pygame
+
+class Scoreboard:
     def __init__(self):
-        super().__init__()
-        self.score=0
-        self.color("white")
-        self.penup()
-        self.goto(0,280)
-        self.hideturtle()
-        self.update_scoreboard()
-    def update_scoreboard(self):
-        self.clear()
-        self.write(f"Score: {self.score}",align="Center",font=(FONT,12,"normal"))
+        self.score = 0
+        self.font = pygame.font.SysFont("Arial", 24)
+        self.game_over_font = pygame.font.SysFont("Arial", 40)
+
+    def update_scoreboard(self, surface):
+        text = self.font.render(f"Score: {self.score}", True, (255, 255, 255))
+        rect = text.get_rect(center=(300, 20)) # Top center
+        surface.blit(text, rect)
 
     def add_score(self):
-        self.score+=1
-    def game_over(self):
-        self.goto(0,0)
-        self.write(f"GAME OVER!",align="Center",font=(FONT,40,"normal"))
-    def food_escaped_game_over(self):
-        self.goto(0, 0)
-        self.write(f"Food escaped!", align="Center", font=(FONT, 40, "normal"))
+        self.score += 1
+
+    def draw_game_over(self, surface):
+        text = self.game_over_font.render("GAME OVER!", True, (255, 255, 255))
+        rect = text.get_rect(center=(300, 300))
+        surface.blit(text, rect)
+
+    def draw_food_escaped(self, surface):
+        text = self.game_over_font.render("Food escaped!", True, (255, 255, 255))
+        rect = text.get_rect(center=(300, 300))
+        surface.blit(text, rect)

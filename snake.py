@@ -1,56 +1,81 @@
-from turtle import Turtle
+import pygame
+
+# Constants matching environment
+BLOCK_SIZE = 20
 
 
 class Snake:
-    def __init__(self):
+    def __init__(self, start_x=300, start_y=300):
         self.segments = []
-        self.create_snake()
-        self.head = self.segments[0]
+        self.create_snake(start_x, start_y)
+        self.heading_angle = 0
 
-    def create_snake(self):
-        starting_positions = [(0, 0), (-20, 0), (-40, 0)]
-        for position in starting_positions:
-            self.add_segment(position)
+    def create_snake(self, start_x, start_y):
+        self.segments = [
+            pygame.Rect(start_x, start_y, BLOCK_SIZE, BLOCK_SIZE),
+            pygame.Rect(start_x - BLOCK_SIZE, start_y, BLOCK_SIZE, BLOCK_SIZE),
+            pygame.Rect(start_x - 2 * BLOCK_SIZE, start_y, BLOCK_SIZE, BLOCK_SIZE)
+        ]
 
-    def add_segment(self, position):
-        new_segment = Turtle("square")
-        new_segment.color("white")
-        new_segment.penup()
-        new_segment.goto(position)
-        self.segments.append(new_segment)
+    @property
+    def head(self):
+        return self.segments[0]
+
+    # --- Compatibility Methods for Environment ---
+    def get_head_x(self):
+        return self.head.x
+
+    def get_head_y(self):
+        return self.head.y
+
+    def get_heading(self):
+        return self.heading_angle
+
 
     def reset(self):
-        # 1. Move old segments off-screen so they don't clutter the view
-        for seg in self.segments:
-            seg.goto(1000, 1000)
-
-        # 2. Clear the list and recreate the snake
         self.segments.clear()
-        self.create_snake()
-        self.head = self.segments[0]
+        self.create_snake(300, 300)
+        self.heading_angle = 0
 
     def extend(self):
-        self.add_segment(self.segments[-1].position())
+        last_seg = self.segments[-1]
+        self.segments.append(pygame.Rect(last_seg.x, last_seg.y, BLOCK_SIZE, BLOCK_SIZE))
 
     def move(self):
-        for seg_num in range(len(self.segments) - 1, 0, -1):
-            new_x = self.segments[seg_num - 1].xcor()
-            new_y = self.segments[seg_num - 1].ycor()
-            self.segments[seg_num].goto(new_x, new_y)
-        self.head.forward(20)
+        # Move body segments
+        for i in range(len(self.segments) - 1, 0, -1):
+            self.segments[i].x = self.segments[i - 1].x
+            self.segments[i].y = self.segments[i - 1].y
 
-    def up(self):
-        if self.head.heading() != 270:
-            self.head.setheading(90)
+        # Move head based on current heading
+        x = self.head.x
+        y = self.head.y
 
-    def down(self):
-        if self.head.heading() != 90:
-            self.head.setheading(270)
+        if self.heading_angle == 0:  # Right
+            x += BLOCK_SIZE
+        elif self.heading_angle == 90:  # Up (Negative Y in Pygame)
+            y -= BLOCK_SIZE
+        elif self.heading_angle == 180:  # Left
+            x -= BLOCK_SIZE
+        elif self.heading_angle == 270:  # Down (Positive Y in Pygame)
+            y += BLOCK_SIZE
 
-    def right(self):
-        if self.head.heading() != 180:
-            self.head.setheading(0)
+        self.head.x = x
+        self.head.y = y
 
-    def left(self):
-        if self.head.heading() != 0:
-            self.head.setheading(180)
+    def set_direction(self, angle):
+        # Prevent 180 degree turns
+        if angle == 0 and self.heading_angle != 180:
+            self.heading_angle = 0
+        elif angle == 90 and self.heading_angle != 270:
+            self.heading_angle = 90
+        elif angle == 180 and self.heading_angle != 0:
+            self.heading_angle = 180
+        elif angle == 270 and self.heading_angle != 90:
+            self.heading_angle = 270
+
+    def draw(self, surface):
+        for segment in self.segments:
+            pygame.draw.rect(surface, (255, 255, 255), segment)  # White snake
+            # Optional: Draw a border for clarity
+            pygame.draw.rect(surface, (0, 0, 0), segment, 1)
