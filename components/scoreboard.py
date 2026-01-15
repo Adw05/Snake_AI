@@ -19,7 +19,3 @@ class Scoreboard:
         rect = text.get_rect(center=(300, 300))
         surface.blit(text, rect)
 
-    def draw_food_escaped(self, surface):
-        text = self.game_over_font.render("Food escaped!", True, (255, 255, 255))
-        rect = text.get_rect(center=(300, 300))
-        surface.blit(text, rect)

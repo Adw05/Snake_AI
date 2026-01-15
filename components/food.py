@@ -36,25 +36,12 @@ class Food:
         # Pick a fresh direction when respawning
         self.pick_new_direction()
 
-    def move_food(self):
-
-        # 1. Apply Momentum (Move in the current direction)
-        self.rect.x += self.vel_x
-        self.rect.y += self.vel_y
-
-        # 2. Random Turn Chance (5% chance per frame)
-        if random.random() < 0.05:
-            self.pick_new_direction()
-
 
     def xcor(self):
         return self.rect.x
 
     def ycor(self):
         return self.rect.y
-
-    def add_escape(self):
-        self.escape_count += 1
 
     def draw(self, surface):
         pygame.draw.rect(surface, (255, 0, 0), self.rect)  # Red Food

@@ -76,10 +76,7 @@ class SnakeEnv:
             self.scoreboard.add_score()
             reward = 10
 
-        # Check food out of bounds (Wandering logic from original)
-        #if (self.food.xcor() > self.width - 20 or self.food.xcor() < 0 or
-                #self.food.ycor() > self.height - 20 or self.food.ycor() < 0):
-            #self.food.refresh()
+
 
         # 3. Time penalty
         reward -= 0.01
