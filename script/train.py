@@ -1,7 +1,7 @@
-from agent import Agent
-from environment import SnakeEnv
-from helper import plot
 
+from snake_game.Snake_Game_AI.rl.helper import plot
+from snake_game.Snake_Game_AI.rl.agent import Agent
+from snake_game.Snake_Game_AI.rl.environment import SnakeEnv
 
 def train():
     env = SnakeEnv()

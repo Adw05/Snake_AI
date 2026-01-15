@@ -1,7 +1,7 @@
 import time
 import pygame
-from agent import Agent
-from environment import SnakeEnv
+from snake_game.Snake_Game_AI.rl.agent import Agent
+from snake_game.Snake_Game_AI.rl.environment import SnakeEnv
 
 
 def play():
