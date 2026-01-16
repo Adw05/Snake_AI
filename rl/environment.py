@@ -16,6 +16,7 @@ class SnakeEnv:
 
         self.snake = Snake(self.width // 2, self.height // 2)
         self.food = Food()
+        self.food.refresh(self.snake.segments)
         self.scoreboard = Scoreboard()
         self.done = False
 
@@ -25,8 +26,8 @@ class SnakeEnv:
     def reset(self):
         self.snake.reset()
         self.food = Food()
+        self.food.refresh(self.snake.segments)
         self.scoreboard = Scoreboard()
-        self.food.refresh()
         self.done = False
         return self.get_state()
 
@@ -71,7 +72,7 @@ class SnakeEnv:
         # 2. Food Logic
         # Check collision with food rect
         if self.snake.head.colliderect(self.food.rect):
-            self.food.refresh()
+            self.food.refresh(self.snake.segments)
             self.snake.extend()
             self.scoreboard.add_score()
             reward = 10

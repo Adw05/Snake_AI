@@ -10,7 +10,7 @@ def play():
     agent = Agent(state_size=14, action_size=3)
 
     # Load the model
-    agent.load('smart_model.pth')
+    agent.load('smart_modelv2.pth')
 
     # Disable randomness
     agent.epsilon = 0

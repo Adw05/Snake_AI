@@ -19,7 +19,7 @@ def plot(scores, mean_scores, save_path='training_plot.png'):
 
     # Save the plot to a file
     plt.savefig(
-        save_path)  # You can customize the filename, format (e.g., 'training_plot.pdf'), and options like dpi=300 for higher resolution
+        save_path)
 
     plt.show(block=False)
     plt.pause(.1)

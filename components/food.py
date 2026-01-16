@@ -27,11 +27,27 @@ class Food:
         elif direction == 'RIGHT':
             self.vel_x, self.vel_y = 10, 0
 
-    def refresh(self):
-        x = random.randint(1, (WIDTH // BLOCK_SIZE) - 2) * BLOCK_SIZE
-        y = random.randint(1, (HEIGHT // BLOCK_SIZE) - 2) * BLOCK_SIZE
-        self.rect.x = x
-        self.rect.y = y
+    def refresh(self, snake_segments=None):
+        while True:
+            x = random.randint(1, (WIDTH // BLOCK_SIZE) - 2) * BLOCK_SIZE
+            y = random.randint(1, (HEIGHT // BLOCK_SIZE) - 2) * BLOCK_SIZE
+            self.rect.x = x
+            self.rect.y = y
+
+            # If no segments provided, accept the spot
+            if snake_segments is None:
+                break
+
+            # Check if the new food position overlaps with any snake segment
+            conflict = False
+            for segment in snake_segments:
+                if self.rect.colliderect(segment):
+                    conflict = True
+                    break
+
+            # If no conflict found, break the loop (valid position)
+            if not conflict:
+                break
 
         # Pick a fresh direction when respawning
         self.pick_new_direction()
